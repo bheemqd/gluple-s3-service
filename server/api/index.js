@@ -17,5 +17,7 @@ var multipleUploads = multer({ storage: storage }).array('file');
 
 router.post("/upload-image",multipleUploads,controller.uploadImage)
 router.post('/upload-file',multipleUpload,controller.uploadfile)
+router.post('/send-buffer-data',multipleUpload,controller.sendbase64Image)
+
 
 module.exports = router;

@@ -111,7 +111,46 @@ const uploadfile = async(req, res)=>{
 
 }
 
+const sendbase64Image = async(req, res)=>{
+    const fileName = req.body.fileName
+    let base64String = req.body.imageBuffer
+    const clientCode = req.body.clientCode
+
+
+    const matches = base64String.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
+    if (!matches) {
+        return res.status(400).send('Invalid base64 string');
+    }
+
+    const imageData = matches[2];
+    const buffer = Buffer.from(imageData, 'base64');
+    const mimeType = matches[1];
+    const fileExtension = mimeType.split('/')[1];
+    const fileNames = `image-${Date.now()}`;
+        s3bucket.createBucket(function () {
+            params = {
+                Bucket: 'glueple',
+                Key: `${clientCode}/${fileName}/${fileNames}`,
+                Body: buffer,
+                ACL: 'public-read',
+                ContentEncoding: 'base64',
+                ContentType: `image/${mimeType}` 
+            }
+            s3bucket.upload(params, function (err, data) {
+                if (err) {
+                    res.status(404).json({ error: true, Message: "Something went wrong", data:err });
+                } 
+                else {
+                    res.status(200).json({ error: false, Message: "File save successfully", data });
+                }
+            });
+        // };
+    });
+
+}
+
 module.exports = {
     uploadImage:uploadImage,
-    uploadfile:uploadfile
+    uploadfile:uploadfile,
+    sendbase64Image:sendbase64Image
 }
